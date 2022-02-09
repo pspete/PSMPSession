@@ -22,7 +22,6 @@ Format an ssh connection command and connect to a target server, using a target 
 ||||[![coveralls][]][cv-site] |
 ||||[![codefactor][]][cf-site] |
 -->
-
 [appveyor]:https://ci.appveyor.com/api/projects/status/y6ad0firmgxok216?svg=true
 [av-site]:https://ci.appveyor.com/project/pspete/psmpsession/branch/main
 [coveralls]:https://coveralls.io/repos/github/pspete/PSMPSession/badge.svg?branch=main
@@ -33,7 +32,7 @@ Format an ssh connection command and connect to a target server, using a target 
 [tests-site]:https://ci.appveyor.com/project/pspete/psmpsession
 [downloads]:https://img.shields.io/powershellgallery/dt/psmpsession.svg?color=blue
 [cf-site]:https://www.codefactor.io/repository/github/pspete/psmpsession
-[codefactor]:https://www.codefactor.io/repository/github/pspete/psmpsession/badge
+[codefactor]:https://www.codefactor.io/repository/github/pspete/psmpsession/badge?s=a6f451bc33d88274e1698cc1465e5f1e1379e0ea
 [codecov]:https://codecov.io/gh/pspete/PSMPSession/branch/main/graph/badge.svg
 [codecov-link]:https://codecov.io/gh/pspete/PSMPSession
 [license]:https://img.shields.io/github/license/pspete/psmpsession.svg
@@ -73,7 +72,7 @@ Format an ssh connection command and connect to a target server, using a target 
 
 ### Prerequisites
 
-- PowerShell Core or Powershell v5 (minimum).
+- PowerShell Core or Powershell v5.1 (minimum).
 - SSH Client installed and configured on your PATH
 - Target account to connect to a target server through CyberArk PSMP.
 
