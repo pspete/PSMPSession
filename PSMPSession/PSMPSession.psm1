@@ -102,6 +102,9 @@ function New-PSMPSession {
     Resulting connection string:
     admin@company.com%target@some.company.com$some.company.com%server.some.company.com@psmp.company.com
 
+    .NOTES
+	AUTHOR: Pete Maan
+
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     param (
