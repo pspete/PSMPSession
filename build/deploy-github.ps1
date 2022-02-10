@@ -5,10 +5,10 @@ Update version number on GitHub to match build version
 
 if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 
-	If ($ENV:APPVEYOR_REPO_BRANCH -eq 'master') {
+	If ($ENV:APPVEYOR_REPO_BRANCH -eq 'main') {
 
 		<# Master Branch #>
-		Write-Host "Deploy Process: GitHub Repository" -ForegroundColor Yellow
+		Write-Host 'Deploy Process: GitHub Repository' -ForegroundColor Yellow
 
 		<#---------------------------------#>
 		<# If Not a PR                     #>
@@ -23,7 +23,7 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 			git config --global credential.helper store
 			Add-Content "$HOME\.git-credentials" "https://$($env:access_token):x-oauth-basic@github.com`n"
 			git config --global user.email "$($env:github_email)"
-			git config --global user.name "Pete Maan"
+			git config --global user.name 'Pete Maan'
 
 			git checkout -q $($ENV:APPVEYOR_REPO_BRANCH)
 
@@ -41,14 +41,14 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 
 		Catch {
 
-			Write-Host "Push to GitHub failed." -ForegroundColor Red
+			Write-Host 'Push to GitHub failed.' -ForegroundColor Red
 			throw $_
 
 		}
 
-		Write-Host "Deploy Process: GitHub Release" -ForegroundColor Yellow
+		Write-Host 'Deploy Process: GitHub Release' -ForegroundColor Yellow
 
-		If ($env:APPVEYOR_BUILD_VERSION -ge "1.0.0") {
+		If ($env:APPVEYOR_BUILD_VERSION -ge '1.0.0') {
 
 			<# Create New Release     #>
 
@@ -58,8 +58,8 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 			$repo = "pspete/$env:APPVEYOR_PROJECT_NAME"
 
 			$headers = @{
-				"Authorization" = "token $token"
-				"Content-type"  = "application/json"
+				'Authorization' = "token $token"
+				'Content-type'  = 'application/json'
 			}
 
 			$body = @{
@@ -75,8 +75,8 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 			try {
 				$json = (ConvertTo-Json $body)
 				$release = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases" -Headers $headers -Method POST -Body $json
-				$uploadUrl = $release.upload_url.Replace("{?name,label}", "") + "?name=" + [IO.Path]::GetFileName($uploadFilePath)
-				Write-Host "OK" -ForegroundColor Green
+				$uploadUrl = $release.upload_url.Replace('{?name,label}', '') + '?name=' + [IO.Path]::GetFileName($uploadFilePath)
+				Write-Host 'OK' -ForegroundColor Green
 
 				Write-Host "Uploading asset $($env:APPVEYOR_PROJECT_NAME)-v$($env:APPVEYOR_BUILD_VERSION).zip..." -NoNewline
 
@@ -85,12 +85,11 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 				$wc.Headers['Content-type'] = 'application/octet-stream'
 				$wc.Headers['Authorization'] = "token $token"
 
-				$null = $wc.UploadData($uploadUrl, "POST", $data)
-				Write-Host "OK" -ForegroundColor Green
-			}
-			catch {
+				$null = $wc.UploadData($uploadUrl, 'POST', $data)
+				Write-Host 'OK' -ForegroundColor Green
+			} catch {
 
-				Write-Host "GitHub Release Failed." -ForegroundColor Red
+				Write-Host 'GitHub Release Failed.' -ForegroundColor Red
 				throw $_
 
 			}
@@ -111,6 +110,6 @@ if (-not ($ENV:APPVEYOR_PULL_REQUEST_NUMBER)) {
 
 Else {
 
-	Write-Host "Skipping Deploy Process: GitHub Repository" -ForegroundColor Yellow
+	Write-Host 'Skipping Deploy Process: GitHub Repository' -ForegroundColor Yellow
 
 }

@@ -1,7 +1,7 @@
 # PSMPSession
 
 ## Planned Updates
-
-### **1.0.0 (February 2022)**
+- Future planned updates will be detailed here
+## **1.0**
 
 - Initial Release

@@ -22,7 +22,7 @@ Format an ssh connection command and connect to a target server, using a target 
 ||||[![coveralls][]][cv-site] |
 ||||[![codefactor][]][cf-site] |
 -->
-[appveyor]:https://ci.appveyor.com/api/projects/status/y6ad0firmgxok216?svg=true
+[appveyor]:https://ci.appveyor.com/api/projects/status/ajo3dq9t0tbtmarq?svg=true
 [av-site]:https://ci.appveyor.com/project/pspete/psmpsession/branch/main
 [coveralls]:https://coveralls.io/repos/github/pspete/PSMPSession/badge.svg?branch=main
 [cv-site]:https://coveralls.io/github/pspete/PSMPSession?branch=main

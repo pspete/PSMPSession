@@ -4,7 +4,7 @@ function New-PSMPSession {
     Formats PSMP connection string and connects to target using ssh.
 
     .DESCRIPTION
-    Correctly formats PSMP connection sting based on the provided parameter values.
+    Correctly formats PSMP ssh connection string based on the provided parameter values.
     Supports both local and domain account objects, including usernames in UPN format.
     Allows user to specify any non-default additional delimiters configured for PSMP.
     SSH client must be installed and available on your PATH.
