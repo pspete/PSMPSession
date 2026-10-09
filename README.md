@@ -6,7 +6,7 @@
 
 # **PSMPSession**
 
-Format an ssh connection command and connect to a target server, using a target account via CyberArk PSMP.
+Format an ssh connection command and connect to a target server, using a target account via CyberArk PSMP or SIA.
 
 | Main Branch            | Latest Build            | CodeFactor                | Coverage                    |  PowerShell Gallery       |  License                   |
 |--------------------------|-------------------------|---------------------------|-----------------------------|---------------------------|----------------------------|
@@ -83,7 +83,13 @@ New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -Tar
 ```powershell
 New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSMPAddress psmp -SSHArgument '-t' -Command 'uptime'
 # ssh -t pspete@root@server@psmp uptime
+
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSMPAddress psmp -SSHArgument '-i', 'C:\keys\psmp_key'
+# ssh -i C:\keys\psmp_key pspete@root@server@psmp
 ```
+
+Specify each ssh switch and its value as separate array elements (`'-i', 'C:\keys\psmp_key'`, not `'-i C:\keys\psmp_key'`).
+An SSH key supplied with `-i` authenticates you to PSMP / the SIA gateway (e.g. an MFA caching key), not to the target.
 
 #### Pipeline Input
 
@@ -91,14 +97,67 @@ New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSM
 Import-Csv .\targets.csv | New-PSMPSession -VaultUser pspete -PSMPAddress psmp
 ```
 
-Use `-WhatIf` or `-Debug` to view the connection string without connecting.
+Use `-WhatIf` or `-Debug` with either function to view the connection string without connecting.
+
+### New-SIASession
+
+Connect through CyberArk Secure Infrastructure Access (SIA). Supplying `-TargetAccount` uses vaulted access; omitting it uses zero standing privileges (ZSP).
+
+#### Zero Standing Privileges
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5
+# pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -TargetPort 2222 -NetworkName Net1
+# pete@pspete.dev#acme@10.0.0.5:2222#Net1@acme.ssh.cyberark.cloud
+```
+
+#### Vaulted Access
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAccount root -TargetAddress server.pspete.dev
+# pete@pspete.dev#acme@root@server.pspete.dev@acme.ssh.cyberark.cloud
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAccount admin -TargetDomain pspete.dev -TargetAddress server.pspete.dev
+# pete@pspete.dev#acme@admin#pspete.dev@server.pspete.dev@acme.ssh.cyberark.cloud
+```
+
+#### Gateway, ssh Arguments & Inline Commands
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -Gateway ssh.vanity.example.com
+# pete@pspete.dev#acme@10.0.0.5@ssh.vanity.example.com
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-L', '8080:10.0.0.5:80' -Command 'touch tmp.txt; cat tmp.txt'
+# ssh -L 8080:10.0.0.5:80 pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud 'touch tmp.txt; cat tmp.txt'
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-i', 'C:\keys\sia_key'
+# ssh -i C:\keys\sia_key pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud
+```
+
+### Save-SIASSHKey
+
+Download an SIA MFA caching SSH key, then use it with `New-SIASession` to connect without repeating MFA until the key expires.
+
+```powershell
+$Key = Save-SIASSHKey -User pete@pspete.dev -Subdomain acme -Path ~\.ssh\acme_pete
+# sftp pete@pspete.dev#acme@key@acme.ssh.cyberark.cloud:/key C:\Users\pete\.ssh\acme_pete
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-i', $Key.FullName
+
+Save-SIASSHKey -User pete@pspete.dev -Subdomain acme -Path ~\.ssh\acme_pete.ppk -Format PPK
+# sftp pete@pspete.dev#acme@key_ppk@acme.ssh.cyberark.cloud:/key C:\Users\pete\.ssh\acme_pete.ppk
+```
+
+Access to the saved key is restricted to the current user. SIA only accepts the key from the IP address it was downloaded from.
 
 ## Installation
 
 ### Prerequisites
 
 - PowerShell Core or Powershell v5.1 (minimum).
-- SSH Client installed and configured on your PATH
+- SSH Client (and SFTP client for `Save-SIASSHKey`) installed and configured on your PATH
 - Target account to connect to a target server through CyberArk PSMP.
 
 ### Install Options
