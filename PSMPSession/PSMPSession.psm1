@@ -6,6 +6,7 @@ function New-PSMPSession {
     .DESCRIPTION
     Correctly formats PSMP ssh connection string based on the provided parameter values.
     Supports both local and domain account objects, including usernames in UPN format.
+    Supports optional target and tunnel ports, and passing additional arguments or a command to the ssh client.
     Allows user to specify any non-default additional delimiters configured for PSMP.
     SSH client must be installed and available on your PATH.
 
@@ -14,9 +15,9 @@ function New-PSMPSession {
     Standard & UserPrincipalName formats are supported.
 
     .PARAMETER TargetAccount
-    The Account in CyberArk to use to connect to a target
+    The Account in CyberArk to use to connect to a target.
     Standard & UserPrincipalName formats are supported.
-    if UserPrincipalName format is used, TargetDomain value must be provided.
+    If UserPrincipalName format is used, TargetDomain value must be provided.
 
     .PARAMETER TargetDomain
     Optional Domain name of the target account.
@@ -26,15 +27,31 @@ function New-PSMPSession {
     The address of the target to connect to using the target account.
 
     .PARAMETER TargetMachine
-    The CyberArk PSMP server to connect through
+    The CyberArk PSMP server to connect through.
+    Alias: PSMPAddress
+
+    .PARAMETER TargetPort
+    Optional port of the target server, if the target does not listen on the default ssh port.
+
+    .PARAMETER TunnelPort
+    Optional tunnel target port, used for ssh tunneling via PSMP.
+    TargetPort must also be provided.
+    Use SSHArgument to supply the matching local port forward, e.g. -L 5432:127.0.0.1:5432
+
+    .PARAMETER SSHArgument
+    Optional arguments passed to the ssh client before the connection string.
+    e.g. -t, -i private_key_file, -L localPort:127.0.0.1:tunnelPort
+
+    .PARAMETER Command
+    Optional command to execute on the target after connecting.
 
     .PARAMETER AdditionalDelimiter
     Specify the AdditionalDelimiter in use.
     If left blank, the default AdditionalDelimiter of % is used.
-    If Authenticating with or targetting an account in UserPrincipalName format, PSMP should be configured with an AdditionalDelimiter.
+    If authenticating with or targeting an account in UserPrincipalName format, PSMP should be configured with an AdditionalDelimiter.
 
     .PARAMETER TargetAddressPortDelimiter
-    The delimiter to seaparate optional connection parameters.
+    The delimiter to separate the target domain and optional port values.
     A TargetAddressPortDelimiter must have been configured for PSMP.
     If left blank, the default TargetAddressPortDelimiter of # is used.
 
@@ -71,12 +88,12 @@ function New-PSMPSession {
     pete@pspete.dev%SomeAccount#SomeDomain%SomeServer@SomePSMP
 
     .EXAMPLE
-    New-PSMPSession -VaultUser -TargetAccount -TargetDomain -TargetAddress -TargetMachine
+    New-PSMPSession -VaultUser admin -TargetAccount target@company.com -TargetDomain company.com -TargetAddress server.company.com -TargetMachine psmp
 
     Connect via PSM when target username is in UPN format.
 
     Resulting connection string:
-    admin%target@company.com#company.com%TargetMachine.company.com@psmp
+    admin%target@company.com#company.com%server.company.com@psmp
 
     .EXAMPLE
     New-PSMPSession -VaultUser admin@company.com -TargetAccount target@some.company.com -TargetDomain some.company.com -TargetAddress server.some.company.com -TargetMachine psmp.company.com
@@ -87,20 +104,49 @@ function New-PSMPSession {
     admin@company.com%target@some.company.com#some.company.com%server.some.company.com@psmp.company.com
 
     .EXAMPLE
-    New-PSMPSession -VaultUser admin@company.com -TargetAccount target@some.company.com -TargetDomain some.company.com -TargetAddress server.some.company.com -TargetMachine psmp.company.com -AdditionalDelimiter "$"
+    New-PSMPSession -VaultUser admin@company.com -TargetAccount target@some.company.com -TargetDomain some.company.com -TargetAddress server.some.company.com -TargetMachine psmp.company.com -AdditionalDelimiter '$'
 
-    Connect via PSM when both vault username and target username are in UPN format, and an alternative additional delimiter is configured
+    Connect via PSM when both vault username and target username are in UPN format, and an alternative additional delimiter is configured.
 
     Resulting connection string:
-    admin$target@company.com#company.com$TargetMachine.company.com@psmp
+    admin@company.com$target@some.company.com#some.company.com$server.some.company.com@psmp.company.com
 
     .EXAMPLE
-    New-PSMPSession -VaultUser admin@company.com -TargetAccount target@some.company.com -TargetDomain some.company.com -TargetAddress server.some.company.com -TargetMachine -AdditionalDelimiter psmp.company.com -TargetAddressPortDelimiter "$"
+    New-PSMPSession -VaultUser admin@company.com -TargetAccount target@some.company.com -TargetDomain some.company.com -TargetAddress server.some.company.com -TargetMachine psmp.company.com -TargetAddressPortDelimiter '$'
 
-    Connect via PSM when both vault username and target username are in UPN format, and an alternative optional delimiter is configured
+    Connect via PSM when both vault username and target username are in UPN format, and an alternative TargetAddressPortDelimiter is configured.
 
     Resulting connection string:
     admin@company.com%target@some.company.com$some.company.com%server.some.company.com@psmp.company.com
+
+    .EXAMPLE
+    New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 2222 -PSMPAddress psmp
+
+    Connect via PSM to a target listening on a non-default ssh port.
+
+    Resulting connection string:
+    pspete@root@server#2222@psmp
+
+    .EXAMPLE
+    New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 22 -TunnelPort 5432 -TargetMachine psmp -SSHArgument '-L', '5432:127.0.0.1:5432'
+
+    Connect via PSM and tunnel local port 5432 to port 5432 on the target.
+
+    Resulting ssh command:
+    ssh -L 5432:127.0.0.1:5432 pspete@root@server#22#5432@psmp
+
+    .EXAMPLE
+    New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetMachine psmp -SSHArgument '-t' -Command 'uptime'
+
+    Connect via PSM, force pseudo-terminal allocation and run a command on the target.
+
+    Resulting ssh command:
+    ssh -t pspete@root@server@psmp uptime
+
+    .EXAMPLE
+    Import-Csv .\targets.csv | New-PSMPSession -VaultUser pspete -TargetMachine psmp
+
+    Connect via PSM to each target in turn, using TargetAccount, TargetAddress and other values from the piped objects.
 
     .NOTES
 	AUTHOR: Pete Maan
@@ -145,8 +191,43 @@ function New-PSMPSession {
             Mandatory = $true,
             ValueFromPipelineByPropertyName = $true
         )]
+        [Alias('PSMPAddress')]
         [string]
         $TargetMachine,
+
+        # Target ssh port
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, 65535)]
+        [int]
+        $TargetPort,
+
+        # Tunnel target port
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [ValidateRange(1, 65535)]
+        [int]
+        $TunnelPort,
+
+        # Arguments passed to ssh before the connection string
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $false
+        )]
+        [string[]]
+        $SSHArgument,
+
+        # Command to run on the target
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipelineByPropertyName = $true
+        )]
+        [string]
+        $Command,
 
         # Additional Delimiter, default "%"
         [Parameter(
@@ -156,7 +237,7 @@ function New-PSMPSession {
         [string]
         $AdditionalDelimiter,
 
-        # Optioanl Delimiter, default "#"
+        # Optional Delimiter, default "#"
         [Parameter(
             Mandatory = $false,
             ValueFromPipelineByPropertyName = $false
@@ -178,7 +259,15 @@ function New-PSMPSession {
 
     process {
 
-        if ($PSBoundParameters.ContainsKey('TargetDomain')) {
+        if (($TargetAccount -like '*@*') -and (-not $TargetDomain)) {
+            throw 'TargetDomain must be provided when TargetAccount is in UserPrincipalName format.'
+        }
+
+        if ($TunnelPort -and (-not $TargetPort)) {
+            throw 'TargetPort must be provided when TunnelPort is specified.'
+        }
+
+        if ($TargetDomain) {
             #Target UPN
             #Domain Account Object
             $Account = "$TargetAccount$OptionalDelimiter$TargetDomain"
@@ -186,28 +275,37 @@ function New-PSMPSession {
             $Account = $TargetAccount
         }
 
+        $Address = $TargetAddress
+        if ($TargetPort) {
+            $Address = "$Address$OptionalDelimiter$TargetPort"
+        }
+        if ($TunnelPort) {
+            $Address = "$Address$OptionalDelimiter$TunnelPort"
+        }
+
         if (($VaultUser -like '*@*') -or ($TargetAccount -like '*@*')) {
             #Vault UPN: Local Account Object
             #Vault UPN: Domain Account Object
             #Vault User: Target UPN
             #Vault UPN: Target UPN
-            $ConnectionString = "$VaultUser$Delimiter$Account$Delimiter$TargetAddress@$TargetMachine"
+            $ConnectionString = "$VaultUser$Delimiter$Account$Delimiter$Address@$TargetMachine"
         } Else {
             #Local Account Object
             #Domain Account Object
-            $ConnectionString = "$VaultUser@$Account@$TargetAddress@$TargetMachine"
+            $ConnectionString = "$VaultUser@$Account@$Address@$TargetMachine"
         }
 
         Write-Debug $ConnectionString
 
-    }
-
-    end {
+        $SSHArgs = @($SSHArgument | Where-Object { $_ }) + $ConnectionString
+        if ($Command) {
+            $SSHArgs += $Command
+        }
 
         if ($PSCmdlet.ShouldProcess($ConnectionString, 'Connect SSH')) {
 
-            #Invoke SSH client connection with PSMP formated connection string
-            ssh $ConnectionString
+            #Invoke SSH client connection with PSMP formatted connection string
+            ssh @SSHArgs
 
         }
 

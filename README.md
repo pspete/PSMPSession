@@ -68,6 +68,31 @@ Format an ssh connection command and connect to a target server, using a target 
 
 ![UPN][UPN]
 
+#### Target Port & Tunnel Port
+
+```powershell
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 2222 -PSMPAddress psmp
+# pspete@root@server#2222@psmp
+
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 22 -TunnelPort 5432 -PSMPAddress psmp -SSHArgument '-L', '5432:127.0.0.1:5432'
+# ssh -L 5432:127.0.0.1:5432 pspete@root@server#22#5432@psmp
+```
+
+#### Additional ssh Arguments & Remote Command
+
+```powershell
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSMPAddress psmp -SSHArgument '-t' -Command 'uptime'
+# ssh -t pspete@root@server@psmp uptime
+```
+
+#### Pipeline Input
+
+```powershell
+Import-Csv .\targets.csv | New-PSMPSession -VaultUser pspete -PSMPAddress psmp
+```
+
+Use `-WhatIf` or `-Debug` to view the connection string without connecting.
+
 ## Installation
 
 ### Prerequisites
