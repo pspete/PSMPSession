@@ -3,8 +3,8 @@ BeforeDiscovery {
     #Get Current Directory
     $Here = Split-Path -Parent $PSCommandPath
 
-    #Assume ModuleName from Repository Root folder
-    $ModuleName = Split-Path (Split-Path $Here -Parent) -Leaf
+    #Module Name
+    $ModuleName = 'PSMPSession'
 
     #Resolve Path to Module Directory
     $ModulePath = Resolve-Path "$Here\..\$ModuleName"
@@ -20,11 +20,11 @@ BeforeDiscovery {
 
 }
 
-Describe $($PSCommandPath -Replace '.Tests.ps1') {
+Describe 'New-PSMPSession' {
 
     AfterAll {}
 
-    InModuleScope $(Split-Path (Split-Path (Split-Path -Parent $PSCommandPath) -Parent) -Leaf ) {
+    InModuleScope 'PSMPSession' {
 
         Context 'The Basics' {
 

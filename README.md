@@ -8,28 +8,17 @@
 
 Format an ssh connection command and connect to a target server, using a target account via CyberArk PSMP or SIA.
 
-| Main Branch            | Latest Build            | CodeFactor                | Coverage                    |  PowerShell Gallery       |  License                   |
-|--------------------------|-------------------------|---------------------------|-----------------------------|---------------------------|----------------------------|
-|[![appveyor][]][av-site]  |[![tests][]][tests-site] | [![codefactor][]][cf-site]| [![codecov][]][codecov-link]| [![psgallery][]][ps-site] |[![license][]][license-link]|
-|                          |                         |                           | [![coveralls][]][cv-site]   | [![downloads][]][ps-site] |                            |
+| Main Branch              | Dev Branch           | CodeFactor                 | Coverage                     | PowerShell Gallery        | License                      |
+| ------------------------ | -------------------- | -------------------------- | ---------------------------- | ------------------------- | ---------------------------- |
+| [![build][]][build-site] | [![dev][]][dev-site] | [![codefactor][]][cf-site] | [![codecov][]][codecov-link] | [![psgallery][]][ps-site] | [![license][]][license-link] |
+|                          |                      |                            |                              | [![downloads][]][ps-site] |                              |
 
-<!---
-| Latest Release          | License                    | Download                | Stats                   |
-|-------------------------|----------------------------|-------------------------|-------------------------|
-|[![appveyor][]][av-site] |[![license][]][license-link]|[![psgallery][]][ps-site]|[![downloads][]][ps-site]|
-||||[![tests][]][tests-site] |
-||||[![codecov][]][codecov-link] |
-||||[![coveralls][]][cv-site] |
-||||[![codefactor][]][cf-site] |
--->
-[appveyor]:https://ci.appveyor.com/api/projects/status/ajo3dq9t0tbtmarq?svg=true
-[av-site]:https://ci.appveyor.com/project/pspete/psmpsession/branch/main
-[coveralls]:https://coveralls.io/repos/github/pspete/PSMPSession/badge.svg?branch=main
-[cv-site]:https://coveralls.io/github/pspete/PSMPSession?branch=main
+[build]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml/badge.svg?branch=main&event=push
+[build-site]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml?query=branch%3Amain
+[dev]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml/badge.svg?branch=dev&event=push
+[dev-site]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml?query=branch%3Adev
 [psgallery]:https://img.shields.io/powershellgallery/v/PSMPSession.svg
 [ps-site]:https://www.powershellgallery.com/packages/PSMPSession
-[tests]:https://img.shields.io/appveyor/tests/pspete/psmpsession.svg
-[tests-site]:https://ci.appveyor.com/project/pspete/psmpsession
 [downloads]:https://img.shields.io/powershellgallery/dt/psmpsession.svg?color=blue
 [cf-site]:https://www.codefactor.io/repository/github/pspete/psmpsession
 [codefactor]:https://www.codefactor.io/repository/github/pspete/psmpsession/badge?s=a6f451bc33d88274e1698cc1465e5f1e1379e0ea

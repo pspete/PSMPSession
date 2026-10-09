@@ -3,8 +3,8 @@ BeforeDiscovery {
     #Get Current Directory
     $Here = Split-Path -Parent $PSCommandPath
 
-    #Assume ModuleName from Repository Root folder
-    $ModuleName = Split-Path (Split-Path $Here -Parent) -Leaf
+    #Module Name
+    $ModuleName = 'PSMPSession'
 
     #Resolve Path to Module Directory
     $ModulePath = Resolve-Path "$Here\..\$ModuleName"
@@ -20,9 +20,9 @@ BeforeDiscovery {
 
 }
 
-Describe $($PSCommandPath -Replace '.Tests.ps1') {
+Describe 'New-SIASession' {
 
-    InModuleScope $(Split-Path (Split-Path (Split-Path -Parent $PSCommandPath) -Parent) -Leaf ) {
+    InModuleScope 'PSMPSession' {
 
         BeforeEach {
 
@@ -120,12 +120,12 @@ Describe $($PSCommandPath -Replace '.Tests.ps1') {
 
             }
 
-            It 'Throws if TargetDomain provided without TargetAccount' {
+            It 'Requires TargetAccount if TargetDomain provided' {
 
-                { New-SIASession -User 'SomeUser@SomeSuffix' -Subdomain 'SomeSubdomain' -TargetDomain 'SomeTargetDomain' -TargetAddress 'SomeTargetAddress' } |
-                    Should -Throw
+                $Parameters = (Get-Command New-SIASession).Parameters
 
-                Should -Invoke ssh -Times 0 -Exactly -Scope It
+                $Parameters['TargetDomain'].ParameterSets.Keys | Should -Be 'Vaulted'
+                $Parameters['TargetAccount'].ParameterSets['Vaulted'].IsMandatory | Should -BeTrue
 
             }
 
