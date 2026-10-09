@@ -6,30 +6,19 @@
 
 # **PSMPSession**
 
-Format an ssh connection command and connect to a target server, using a target account via CyberArk PSMP.
+Format an ssh connection command and connect to a target server, using a target account via CyberArk PSMP or SIA.
 
-| Main Branch            | Latest Build            | CodeFactor                | Coverage                    |  PowerShell Gallery       |  License                   |
-|--------------------------|-------------------------|---------------------------|-----------------------------|---------------------------|----------------------------|
-|[![appveyor][]][av-site]  |[![tests][]][tests-site] | [![codefactor][]][cf-site]| [![codecov][]][codecov-link]| [![psgallery][]][ps-site] |[![license][]][license-link]|
-|                          |                         |                           | [![coveralls][]][cv-site]   | [![downloads][]][ps-site] |                            |
+| Main Branch              | Dev Branch           | CodeFactor                 | Coverage                     | PowerShell Gallery        | License                      |
+| ------------------------ | -------------------- | -------------------------- | ---------------------------- | ------------------------- | ---------------------------- |
+| [![build][]][build-site] | [![dev][]][dev-site] | [![codefactor][]][cf-site] | [![codecov][]][codecov-link] | [![psgallery][]][ps-site] | [![license][]][license-link] |
+|                          |                      |                            |                              | [![downloads][]][ps-site] |                              |
 
-<!---
-| Latest Release          | License                    | Download                | Stats                   |
-|-------------------------|----------------------------|-------------------------|-------------------------|
-|[![appveyor][]][av-site] |[![license][]][license-link]|[![psgallery][]][ps-site]|[![downloads][]][ps-site]|
-||||[![tests][]][tests-site] |
-||||[![codecov][]][codecov-link] |
-||||[![coveralls][]][cv-site] |
-||||[![codefactor][]][cf-site] |
--->
-[appveyor]:https://ci.appveyor.com/api/projects/status/ajo3dq9t0tbtmarq?svg=true
-[av-site]:https://ci.appveyor.com/project/pspete/psmpsession/branch/main
-[coveralls]:https://coveralls.io/repos/github/pspete/PSMPSession/badge.svg?branch=main
-[cv-site]:https://coveralls.io/github/pspete/PSMPSession?branch=main
+[build]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml/badge.svg?branch=main&event=push
+[build-site]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml?query=branch%3Amain
+[dev]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml/badge.svg?branch=dev&event=push
+[dev-site]:https://github.com/pspete/PSMPSession/actions/workflows/ci.yml?query=branch%3Adev
 [psgallery]:https://img.shields.io/powershellgallery/v/PSMPSession.svg
 [ps-site]:https://www.powershellgallery.com/packages/PSMPSession
-[tests]:https://img.shields.io/appveyor/tests/pspete/psmpsession.svg
-[tests-site]:https://ci.appveyor.com/project/pspete/psmpsession
 [downloads]:https://img.shields.io/powershellgallery/dt/psmpsession.svg?color=blue
 [cf-site]:https://www.codefactor.io/repository/github/pspete/psmpsession
 [codefactor]:https://www.codefactor.io/repository/github/pspete/psmpsession/badge?s=a6f451bc33d88274e1698cc1465e5f1e1379e0ea
@@ -68,12 +57,96 @@ Format an ssh connection command and connect to a target server, using a target 
 
 ![UPN][UPN]
 
+#### Target Port & Tunnel Port
+
+```powershell
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 2222 -PSMPAddress psmp
+# pspete@root@server#2222@psmp
+
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -TargetPort 22 -TunnelPort 5432 -PSMPAddress psmp -SSHArgument '-L', '5432:127.0.0.1:5432'
+# ssh -L 5432:127.0.0.1:5432 pspete@root@server#22#5432@psmp
+```
+
+#### Additional ssh Arguments & Remote Command
+
+```powershell
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSMPAddress psmp -SSHArgument '-t' -Command 'uptime'
+# ssh -t pspete@root@server@psmp uptime
+
+New-PSMPSession -VaultUser pspete -TargetAccount root -TargetAddress server -PSMPAddress psmp -SSHArgument '-i', 'C:\keys\psmp_key'
+# ssh -i C:\keys\psmp_key pspete@root@server@psmp
+```
+
+Specify each ssh switch and its value as separate array elements (`'-i', 'C:\keys\psmp_key'`, not `'-i C:\keys\psmp_key'`).
+An SSH key supplied with `-i` authenticates you to PSMP / the SIA gateway (e.g. an MFA caching key), not to the target.
+
+#### Pipeline Input
+
+```powershell
+Import-Csv .\targets.csv | New-PSMPSession -VaultUser pspete -PSMPAddress psmp
+```
+
+Use `-WhatIf` or `-Debug` with either function to view the connection string without connecting.
+
+### New-SIASession
+
+Connect through CyberArk Secure Infrastructure Access (SIA). Supplying `-TargetAccount` uses vaulted access; omitting it uses zero standing privileges (ZSP).
+
+#### Zero Standing Privileges
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5
+# pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -TargetPort 2222 -NetworkName Net1
+# pete@pspete.dev#acme@10.0.0.5:2222#Net1@acme.ssh.cyberark.cloud
+```
+
+#### Vaulted Access
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAccount root -TargetAddress server.pspete.dev
+# pete@pspete.dev#acme@root@server.pspete.dev@acme.ssh.cyberark.cloud
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAccount admin -TargetDomain pspete.dev -TargetAddress server.pspete.dev
+# pete@pspete.dev#acme@admin#pspete.dev@server.pspete.dev@acme.ssh.cyberark.cloud
+```
+
+#### Gateway, ssh Arguments & Inline Commands
+
+```powershell
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -Gateway ssh.vanity.example.com
+# pete@pspete.dev#acme@10.0.0.5@ssh.vanity.example.com
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-L', '8080:10.0.0.5:80' -Command 'touch tmp.txt; cat tmp.txt'
+# ssh -L 8080:10.0.0.5:80 pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud 'touch tmp.txt; cat tmp.txt'
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-i', 'C:\keys\sia_key'
+# ssh -i C:\keys\sia_key pete@pspete.dev#acme@10.0.0.5@acme.ssh.cyberark.cloud
+```
+
+### Save-SIASSHKey
+
+Download an SIA MFA caching SSH key, then use it with `New-SIASession` to connect without repeating MFA until the key expires.
+
+```powershell
+$Key = Save-SIASSHKey -User pete@pspete.dev -Subdomain acme -Path ~\.ssh\acme_pete
+# sftp pete@pspete.dev#acme@key@acme.ssh.cyberark.cloud:/key C:\Users\pete\.ssh\acme_pete
+
+New-SIASession -User pete@pspete.dev -Subdomain acme -TargetAddress 10.0.0.5 -SSHArgument '-i', $Key.FullName
+
+Save-SIASSHKey -User pete@pspete.dev -Subdomain acme -Path ~\.ssh\acme_pete.ppk -Format PPK
+# sftp pete@pspete.dev#acme@key_ppk@acme.ssh.cyberark.cloud:/key C:\Users\pete\.ssh\acme_pete.ppk
+```
+
+Access to the saved key is restricted to the current user. SIA only accepts the key from the IP address it was downloaded from.
+
 ## Installation
 
 ### Prerequisites
 
 - PowerShell Core or Powershell v5.1 (minimum).
-- SSH Client installed and configured on your PATH
+- SSH Client (and SFTP client for `Save-SIASSHKey`) installed and configured on your PATH
 - Target account to connect to a target server through CyberArk PSMP.
 
 ### Install Options

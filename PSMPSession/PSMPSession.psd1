@@ -30,7 +30,7 @@
     Copyright         = 'Pete Maan 2022'
 
     # Description of the functionality provided by this module
-    Description       = 'SSH Connection Command Helper for CyberArk PSMP'
+    Description       = 'SSH Connection Command Helper for CyberArk PSMP & SIA'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion = '5.1'
@@ -69,7 +69,7 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = 'New-PSMPSession'
+    FunctionsToExport = @('New-PSMPSession', 'New-SIASession', 'Save-SIASSHKey')
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     #CmdletsToExport   = '*'
@@ -95,10 +95,10 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags         = @('CyberArk', 'SSH', 'PSMP')
+            Tags         = @('CyberArk', 'SSH', 'PSMP', 'SIA')
 
             # A URL to the license for this module.
-            LicenseUri   = 'https://github.com/pspete/PSMPSession/blob/master/LICENSE.md'
+            LicenseUri   = 'https://github.com/pspete/PSMPSession/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri   = 'https://www.pspete.dev/'
@@ -107,7 +107,7 @@
             #IconUri      = 'https://pspas.pspete.dev/assets/images/symbol.png'
 
             # ReleaseNotes of this module
-            ReleaseNotes = 'https://github.com/pspete/PSMPSession/blob/master/CHANGELOG.md'
+            ReleaseNotes = 'https://github.com/pspete/PSMPSession/blob/main/CHANGELOG.md'
 
         } # End of PSData hashtable
 
