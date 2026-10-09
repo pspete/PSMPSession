@@ -98,7 +98,7 @@
             Tags         = @('CyberArk', 'SSH', 'PSMP', 'SIA')
 
             # A URL to the license for this module.
-            LicenseUri   = 'https://github.com/pspete/PSMPSession/blob/master/LICENSE.md'
+            LicenseUri   = 'https://github.com/pspete/PSMPSession/blob/main/LICENSE'
 
             # A URL to the main website for this project.
             ProjectUri   = 'https://www.pspete.dev/'
@@ -107,7 +107,7 @@
             #IconUri      = 'https://pspas.pspete.dev/assets/images/symbol.png'
 
             # ReleaseNotes of this module
-            ReleaseNotes = 'https://github.com/pspete/PSMPSession/blob/master/CHANGELOG.md'
+            ReleaseNotes = 'https://github.com/pspete/PSMPSession/blob/main/CHANGELOG.md'
 
         } # End of PSData hashtable
 

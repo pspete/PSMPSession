@@ -1,1 +1,7 @@
+.vscode/*
 CLAUDE.md
+Release/
+coverage.xml
+TestResults.xml
+codecov.exe
+build/
