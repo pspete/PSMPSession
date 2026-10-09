@@ -140,6 +140,14 @@ Describe 'Save-SIASSHKey' {
 
             }
 
+            It 'Restricts key file mode to the current user' -Skip:(($PSVersionTable.PSEdition -eq 'Desktop') -or $IsWindows) {
+
+                Save-SIASSHKey -User 'SomeUser@SomeSuffix' -Subdomain 'SomeSubdomain' -Path $KeyPath
+
+                (Get-Item -Path $KeyPath).UnixFileMode | Should -Be ([System.IO.UnixFileMode]'UserRead, UserWrite')
+
+            }
+
             It 'Does not invoke sftp with WhatIf' {
 
                 Save-SIASSHKey -User 'SomeUser@SomeSuffix' -Subdomain 'SomeSubdomain' -Path $KeyPath -WhatIf
